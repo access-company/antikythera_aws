@@ -6,7 +6,7 @@ alias Croma.Result, as: R
 defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   @behaviour AntikytheraEal.ClusterConfiguration.Behaviour
 
-  alias SolomonLib.Httpc
+  alias Antikythera.Httpc
   require AntikytheraCore.Logger, as: L
 
   @region                         Application.fetch_env!(:antikythera_aws, :region)

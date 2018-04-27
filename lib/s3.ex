@@ -3,7 +3,7 @@
 use Croma
 
 defmodule AntikytheraAws.S3 do
-  alias SolomonLib.GearName
+  alias Antikythera.GearName
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraAws.Auth.{Credentials, InstanceProfileCredentials}
 
@@ -68,7 +68,7 @@ defmodule AntikytheraAws.S3 do
     end
 
     defp today_str() do
-      import SolomonLib.StringFormat
+      import Antikythera.StringFormat
       {y, m, d} = :erlang.date()
       "#{y}#{pad2(m)}#{pad2(d)}"
     end

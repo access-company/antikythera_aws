@@ -17,8 +17,8 @@ defmodule AntikytheraAws.Auth.Credentials do
 end
 
 defmodule AntikytheraAws.Auth.InstanceProfileCredentials do
-  alias SolomonLib.{Time, Httpc}
-  alias SolomonLib.Httpc.Response, as: Res
+  alias Antikythera.{Time, Httpc}
+  alias Antikythera.Httpc.Response, as: Res
   alias AntikytheraCore.Ets.SystemCache
   alias AntikytheraAws.Auth.Credentials
 

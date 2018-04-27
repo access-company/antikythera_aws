@@ -7,11 +7,11 @@ defmodule AntikytheraAws.Signer do
   Request signing for AWS
   """
 
-  alias SolomonLib.Time
-  alias SolomonLib.IsoTimestamp.Basic, as: AmzDate
-  alias SolomonLib.UnencodedPath, as: UPath
-  alias SolomonLib.EncodedPath, as: EPath
-  alias SolomonLib.Http.{Headers, Method}
+  alias Antikythera.Time
+  alias Antikythera.IsoTimestamp.Basic, as: AmzDate
+  alias Antikythera.UnencodedPath, as: UPath
+  alias Antikythera.EncodedPath, as: EPath
+  alias Antikythera.Http.{Headers, Method}
   alias AntikytheraAws.Auth.Credentials, as: Creds
 
   defmodule V4 do
@@ -26,10 +26,10 @@ defmodule AntikytheraAws.Signer do
 
     @doc """
     From given `creds` and request informations, returns headers ready for AWS request.
-    Arguments are mostly `SolomonLib.Httpc.request/5` compatible, with some extra treatments:
+    Arguments are mostly `Antikythera.Httpc.request/5` compatible, with some extra treatments:
 
     - `creds`, `region`, `service` must be supplied
-        - `creds` are basically retrieved with `SolomonLib.Aws.Auth.InstanceProfileCredentials`
+        - `creds` are basically retrieved with `Antikythera.Aws.Auth.InstanceProfileCredentials`
     - `path` must not include query string. Relative/redundant path must be resolved beforehand
         - Any characters in segments except RFC3986 "Unreserved Characters", will be encoded
         - Escape chars ("%") in segments will be encoded to "%25"
@@ -38,7 +38,7 @@ defmodule AntikytheraAws.Signer do
         - "x-amz-date" or "date" field value will be used as signature date. "x-amz-date" will be prioritized
         - If neither exist, "x-amz-date" will be generated with current date
     - `params` must be decoded query strings, in a list of tuple-2
-        - From `SolomonLib.Http.QueryParams` which is `SubtypeOfMap`, convert with `Map.to_list/1`
+        - From `Antikythera.Http.QueryParams` which is `SubtypeOfMap`, convert with `Map.to_list/1`
 
     Note: "content-type" and "x-amz-content-sha256" headers are required for S3, but not generally.
     """

@@ -4,7 +4,7 @@ use Mix.Config
 
 # Import config.exs in antikythera for testing
 repo_dir = Path.expand("..", __DIR__)
-antikythera_config_file = Path.join([repo_dir, "deps", "solomon", "config", "config.exs"])
+antikythera_config_file = Path.join([repo_dir, "deps", "antikythera", "config", "config.exs"])
 if File.regular?(antikythera_config_file) do
   import_config antikythera_config_file
 end

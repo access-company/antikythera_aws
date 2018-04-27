@@ -2,8 +2,8 @@
 
 defmodule AntikytheraAws.Auth.InstanceProfileCredentialsTest do
   use Croma.TestCase
-  alias SolomonLib.{Time, Httpc}
-  alias SolomonLib.Httpc.Response, as: Res
+  alias Antikythera.{Time, Httpc}
+  alias Antikythera.Httpc.Response, as: Res
   alias AntikytheraCore.Ets.SystemCache
   alias AntikytheraAws.Auth.Credentials, as: Creds
 
