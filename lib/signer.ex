@@ -42,7 +42,7 @@ defmodule AntikytheraAws.Signer do
 
     Note: "content-type" and "x-amz-content-sha256" headers are required for S3, but not generally.
     """
-    defun prepare_headers(%Creds{access_key_id: aki, secret_access_key: sak, security_token: st},
+    defun prepare_headers(%Creds{access_key_id: aki, secret_access_key: sak, security_token: st} = _creds,
                           region  :: v[String.t],
                           service :: v[String.t],
                           method  :: v[Method.t],
