@@ -29,7 +29,7 @@ defmodule AntikytheraAws.Signer do
     Arguments are mostly `Antikythera.Httpc.request/5` compatible, with some extra treatments:
 
     - `creds`, `region`, `service` must be supplied
-        - `creds` are basically retrieved with `Antikythera.Aws.Auth.InstanceProfileCredentials`
+        - `creds` are basically retrieved with `AntikytheraAws.Auth.InstanceProfileCredentials`
     - `path` must not include query string. Relative/redundant path must be resolved beforehand
         - Any characters in segments except RFC3986 "Unreserved Characters", will be encoded
         - Escape chars ("%") in segments will be encoded to "%25"
@@ -38,7 +38,7 @@ defmodule AntikytheraAws.Signer do
         - "x-amz-date" or "date" field value will be used as signature date. "x-amz-date" will be prioritized
         - If neither exist, "x-amz-date" will be generated with current date
     - `params` must be decoded query strings, in a list of tuple-2
-        - From `Antikythera.Http.QueryParams` which is `SubtypeOfMap`, convert with `Map.to_list/1`
+        - To convert from `Antikythera.Http.QueryParams` (which is `Croma.SubtypeOfMap`), just use `Map.to_list/1`
 
     Note: "content-type" and "x-amz-content-sha256" headers are required for S3, but not generally.
     """
