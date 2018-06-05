@@ -2,11 +2,12 @@
 
 use Mix.Config
 
-# Import config.exs in antikythera for testing
-repo_dir = Path.expand("..", __DIR__)
-antikythera_config_file = Path.join([repo_dir, "deps", "antikythera", "config", "config.exs"])
-if File.regular?(antikythera_config_file) do
-  import_config antikythera_config_file
+# Import mandatory antikythera configurations for development/testing.
+# They should be supplied by antikythera instances when this package is used as a dependency.
+dep_antikythera_dir = Path.expand(Path.join([__DIR__, "..", "deps", "antikythera"]))
+if File.dir?(dep_antikythera_dir) do
+  Code.require_file(Path.join([dep_antikythera_dir, "mix_common.exs"])) # Loads Antikythera.MixConfig
+  import_config Path.join([dep_antikythera_dir, "config", "config.exs"])
 end
 
 config :antikythera_aws, [
