@@ -21,11 +21,11 @@ defmodule AntikytheraAws.MixProject do
 
   defp deps() do
     [
-      {:antikythera, [git: "git@github.com:access-company/antikythera.git"]},
-      {:ex_doc , "0.18.3", [only: :dev , runtime: false]},
-      {:dialyze, "0.2.1" , [only: :dev , runtime: false]},
-      {:credo  , "0.8.10", [only: :dev , runtime: false]},
-      {:meck   , "0.8.9" , [only: :test]},
+      {:antikythera, "~> 0.2"},
+      {:ex_doc     , "~> 0.18", [only: :dev , runtime: false]},
+      {:dialyze    , "~> 0.2" , [only: :dev , runtime: false]},
+      {:credo      , "~> 0.8" , [only: :dev , runtime: false]},
+      {:meck       , "~> 0.8" , [only: :test]},
     ]
   end
 end
