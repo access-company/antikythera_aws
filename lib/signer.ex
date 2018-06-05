@@ -4,7 +4,7 @@ use Croma
 
 defmodule AntikytheraAws.Signer do
   @moduledoc """
-  Request signing for AWS
+  Provides request signing for AWS APIs.
   """
 
   alias Antikythera.Time
@@ -16,8 +16,7 @@ defmodule AntikytheraAws.Signer do
 
   defmodule V4 do
     @moduledoc """
-    Signing with Signature Version 4
-    Doc: http://docs.aws.amazon.com/general/latest/gr/sigv4_signing.html
+    Signing with [Signature Version 4](http://docs.aws.amazon.com/general/latest/gr/sigv4_signing.html).
     """
 
     @key_prefix         "AWS4"
@@ -26,6 +25,7 @@ defmodule AntikytheraAws.Signer do
 
     @doc """
     From given `creds` and request informations, returns headers ready for AWS request.
+
     Arguments are mostly `Antikythera.Httpc.request/5` compatible, with some extra treatments:
 
     - `creds`, `region`, `service` must be supplied
