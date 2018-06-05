@@ -21,7 +21,7 @@ defmodule AntikytheraAws.MixProject do
 
   defp deps() do
     [
-      {:antikythera, "~> 0.1"},
+      {:antikythera, "~> 0.2"},
       {:ex_doc     , "~> 0.18", [only: :dev , runtime: false]},
       {:dialyze    , "~> 0.2" , [only: :dev , runtime: false]},
       {:credo      , "~> 0.8" , [only: :dev , runtime: false]},
