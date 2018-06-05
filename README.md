@@ -1,5 +1,7 @@
 # AntikytheraAws
 
+[![hex badge](https://img.shields.io/hexpm/v/antikythera_aws.svg)](https://hex.pm/packages/antikythera_aws)
+
 Implementations of some of pluggable modules in the [Antikythera Framework](https://github.com/access-company/antikythera), using AWS services.
 
 ## Components
