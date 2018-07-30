@@ -106,7 +106,7 @@ defmodule AntikytheraAws.Signer do
 
     defunp canonical_request(method         :: v[Method.t],
                              path           :: v[UPath.t],
-                             payload_sha256 :: v[binary],
+                             payload_sha256 :: v[String.t],
                              cheaders_str   :: v[String.t],
                              sheaders_str   :: v[String.t],
                              params         :: [{String.t, String.t}]) :: String.t do
