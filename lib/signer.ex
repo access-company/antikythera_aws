@@ -63,8 +63,9 @@ defmodule AntikytheraAws.Signer do
           {ad, Map.put(without_amz_date, "x-amz-date", ad)}
       end
       headers_might_with_st = if st, do: Map.put(headers_with_date, "x-amz-security-token", st), else: headers_with_date
+      payload_sha256        = hex_sha256(payload)
       sign_ready_headers    = if service == "s3" do
-        Map.put(headers_might_with_st, "x-amz-content-sha256", hex_sha256(payload))
+        Map.put(headers_might_with_st, "x-amz-content-sha256", payload_sha256)
       else
         headers_might_with_st
       end
@@ -73,7 +74,7 @@ defmodule AntikytheraAws.Signer do
       scope = credential_scope(amz_date, region, service)
       chs   = canonical_headers_string(sign_ready_headers)
       shs   = signed_headers_string(sign_ready_headers) # Declare headers used for signing (AWS will ignore other headers for signature verification)
-      creq  = canonical_request(method, path, payload, chs, shs, params)
+      creq  = canonical_request(method, path, payload_sha256, chs, shs, params)
       sts   = string_to_sign(amz_date, scope, creq)
       sign  = hex_hmac_sha256(skey, sts)
       auth_value = "#{@sign_algorithm} Credential=#{aki}/#{scope}, SignedHeaders=#{shs}, Signature=#{sign}"
@@ -103,12 +104,12 @@ defmodule AntikytheraAws.Signer do
       [String.slice(amz_date, 0..7), region, service, @termination_string] |> Enum.join("/")
     end
 
-    defunp canonical_request(method       :: v[Method.t],
-                             path         :: v[UPath.t],
-                             payload      :: v[binary],
-                             cheaders_str :: v[String.t],
-                             sheaders_str :: v[String.t],
-                             params       :: [{String.t, String.t}]) :: String.t do
+    defunp canonical_request(method         :: v[Method.t],
+                             path           :: v[UPath.t],
+                             payload_sha256 :: v[binary],
+                             cheaders_str   :: v[String.t],
+                             sheaders_str   :: v[String.t],
+                             params         :: [{String.t, String.t}]) :: String.t do
       uppercase_method = Method.to_string(method)
       [
         uppercase_method,
@@ -116,7 +117,7 @@ defmodule AntikytheraAws.Signer do
         canonical_query_string(params),
         cheaders_str,
         sheaders_str,
-        hex_sha256(payload),
+        payload_sha256,
       ] |> Enum.join("\n")
     end
 
