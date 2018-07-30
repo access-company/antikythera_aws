@@ -53,22 +53,10 @@ defmodule AntikytheraAws.Signer do
       if String.contains?(path, "?"), do: raise("`path` must not include query string part!")
       downcased_headers = Map.new(headers, fn {key, val} -> {String.downcase(key), val} end)
       if !Map.has_key?(downcased_headers, "host"), do: raise("'host' header is required!")
-      {amz_date, headers_with_date} = case downcased_headers do
-        %{"x-amz-date" => ad} -> {ad, downcased_headers}
-        %{"date" => date}     ->
-          ad = Time.from_http_date(date) |> Croma.Result.get!() |> Time.to_iso_basic()
-          {ad, downcased_headers}
-        without_amz_date      ->
-          ad = Time.to_iso_basic(Time.now())
-          {ad, Map.put(without_amz_date, "x-amz-date", ad)}
-      end
+      {amz_date, headers_with_date} = gen_amz_date_and_put_date(downcased_headers)
       headers_might_with_st = if st, do: Map.put(headers_with_date, "x-amz-security-token", st), else: headers_with_date
       payload_sha256        = hex_sha256(payload)
-      sign_ready_headers    = if service == "s3" do
-        Map.put(headers_might_with_st, "x-amz-content-sha256", payload_sha256)
-      else
-        headers_might_with_st
-      end
+      sign_ready_headers    = put_content_sha256_if_s3_request(headers_might_with_st, service, payload_sha256)
 
       skey  = signing_key(sak, amz_date, region, service)
       scope = credential_scope(amz_date, region, service)
@@ -80,6 +68,24 @@ defmodule AntikytheraAws.Signer do
       auth_value = "#{@sign_algorithm} Credential=#{aki}/#{scope}, SignedHeaders=#{shs}, Signature=#{sign}"
 
       Map.put(sign_ready_headers, "authorization", auth_value)
+    end
+
+    defunp gen_amz_date_and_put_date(headers :: v[Headers.t]) :: {AmzDate.t, Headers.t} do
+      case headers do
+        %{"x-amz-date" => ad} -> {ad, headers}
+        %{"date" => date}     ->
+          ad = Time.from_http_date(date) |> Croma.Result.get!() |> Time.to_iso_basic()
+          {ad, headers}
+        without_amz_date      ->
+          ad = Time.to_iso_basic(Time.now())
+          {ad, Map.put(without_amz_date, "x-amz-date", ad)}
+      end
+    end
+
+    defunp put_content_sha256_if_s3_request(headers        :: v[Headers.t],
+                                            service        :: v[String.t],
+                                            payload_sha256 :: v[String.t]) :: Headers.t do
+      if service == "s3", do: Map.put(headers, "x-amz-content-sha256", payload_sha256), else: headers
     end
 
     defunpt signing_key(sak      :: v[String.t],
