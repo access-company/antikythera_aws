@@ -62,7 +62,12 @@ defmodule AntikytheraAws.Signer do
           ad = Time.to_iso_basic(Time.now())
           {ad, Map.put(without_amz_date, "x-amz-date", ad)}
       end
-      sign_ready_headers = if st, do: Map.put(headers_with_date, "x-amz-security-token", st), else: headers_with_date
+      headers_might_with_st = if st, do: Map.put(headers_with_date, "x-amz-security-token", st), else: headers_with_date
+      sign_ready_headers    = if service == "s3" and method in [:post, :put] do
+        Map.put(headers_might_with_st, "x-amz-content-sha256", hex_sha256(payload))
+      else
+        headers_might_with_st
+      end
 
       skey  = signing_key(sak, amz_date, region, service)
       scope = credential_scope(amz_date, region, service)

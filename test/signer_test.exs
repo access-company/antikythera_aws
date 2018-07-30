@@ -4,10 +4,13 @@ defmodule AntikytheraAws.Signer.V4Test do
   use Croma.TestCase
   alias AntikytheraAws.Auth.Credentials, as: Creds
 
-  @example_id     "AKIDEXAMPLE"
-  @example_secret "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
-  @example_creds  %Creds{access_key_id: @example_id, secret_access_key: @example_secret}
-  @example_region "us-east-1"
+  @example_id      "AKIDEXAMPLE"
+  @example_secret  "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+  @example_creds   %Creds{access_key_id: @example_id, secret_access_key: @example_secret}
+  @example_region  "us-east-1"
+  @example_payload "example payload"
+
+  defp hex_sha256(str), do: Base.encode16(:crypto.hash(:sha256, str), case: :lower)
 
   test "canonical_uri/1 should normalize path as per AWS specification" do
     [
@@ -129,5 +132,20 @@ defmodule AntikytheraAws.Signer.V4Test do
   test "prepare_headers/8 should raise if `path` includes query string part" do
     path_with_qs = "/hoge?foo=bar"
     catch_error V4.prepare_headers(@example_creds, @example_region, "iam", :get, path_with_qs, "", %{"host" => "example.com"}, [{"foo", "bar"}])
+  end
+
+  test "prepare_headers/8 should generate 'x-amz-content-sha256' if service is S3 and method is POST or PUT" do
+    result = V4.prepare_headers(@example_creds, @example_region, "s3", :put, "/object_key", @example_payload, %{"host" => "example.com"}, [])
+    assert result["x-amz-content-sha256"] == hex_sha256(@example_payload)
+  end
+
+  test "prepare_headers/8 should not generate 'x-amz-content-sha256' if service is S3 and method is other than POST and PUT" do
+    result = V4.prepare_headers(@example_creds, @example_region, "s3", :get, "/", "", %{"host" => "example.com"}, [])
+    refute Map.has_key?(result, "x-amz-content-sha256")
+  end
+
+  test "prepare_headers/8 should not generate 'x-amz-content-sha256' if service is not S3" do
+    result = V4.prepare_headers(@example_creds, @example_region, "iam", :put, "/object_key", @example_payload, %{"host" => "example.com"}, [])
+    refute Map.has_key?(result, "x-amz-content-sha256")
   end
 end
