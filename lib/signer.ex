@@ -47,7 +47,7 @@ defmodule AntikytheraAws.Signer do
                           service :: v[String.t],
                           method  :: v[Method.t],
                           path    :: v[UPath.t],
-                          payload :: v[String.t],
+                          payload :: v[binary],
                           headers :: v[Headers.t],
                           params  :: [{String.t, String.t}]) :: Headers.t do
       if String.contains?(path, "?"), do: raise("`path` must not include query string part!")
@@ -105,7 +105,7 @@ defmodule AntikytheraAws.Signer do
 
     defunp canonical_request(method       :: v[Method.t],
                              path         :: v[UPath.t],
-                             payload      :: v[String.t],
+                             payload      :: v[binary],
                              cheaders_str :: v[String.t],
                              sheaders_str :: v[String.t],
                              params       :: [{String.t, String.t}]) :: String.t do
