@@ -51,23 +51,24 @@ defmodule AntikytheraAws.Signer do
                           headers :: v[Headers.t],
                           params  :: [{String.t, String.t}]) :: Headers.t do
       if String.contains?(path, "?"), do: raise("`path` must not include query string part!")
+      payload_sha256                          = hex_sha256(payload)
+      {sign_ready_headers, amz_date}          = canonicalize_headers_with_amz_date(headers, st, service, payload_sha256)
+      {canonical_request, signed_headers_str} = make_canonical_request_with_shs(sign_ready_headers, method, path, payload_sha256, params)
+      signature                               = compute_signature(aki, sak, amz_date, region, service, canonical_request, signed_headers_str)
+
+      Map.put(sign_ready_headers, "authorization", signature)
+    end
+
+    defunp canonicalize_headers_with_amz_date(headers        :: v[Headers.t],
+                                              st             :: v[nil | String.t],
+                                              service        :: v[String.t],
+                                              payload_sha256 :: v[String.t]) :: {Headers.t, AmzDate.t} do
       downcased_headers = Map.new(headers, fn {key, val} -> {String.downcase(key), val} end)
       if !Map.has_key?(downcased_headers, "host"), do: raise("'host' header is required!")
       {amz_date, headers_with_date} = gen_amz_date_and_put_date(downcased_headers)
-      headers_might_with_st = if st, do: Map.put(headers_with_date, "x-amz-security-token", st), else: headers_with_date
-      payload_sha256        = hex_sha256(payload)
-      sign_ready_headers    = put_content_sha256_if_s3_request(headers_might_with_st, service, payload_sha256)
-
-      skey  = signing_key(sak, amz_date, region, service)
-      scope = credential_scope(amz_date, region, service)
-      chs   = canonical_headers_string(sign_ready_headers)
-      shs   = signed_headers_string(sign_ready_headers) # Declare headers used for signing (AWS will ignore other headers for signature verification)
-      creq  = canonical_request(method, path, payload_sha256, chs, shs, params)
-      sts   = string_to_sign(amz_date, scope, creq)
-      sign  = hex_hmac_sha256(skey, sts)
-      auth_value = "#{@sign_algorithm} Credential=#{aki}/#{scope}, SignedHeaders=#{shs}, Signature=#{sign}"
-
-      Map.put(sign_ready_headers, "authorization", auth_value)
+      headers_might_with_st         = if st, do: Map.put(headers_with_date, "x-amz-security-token", st), else: headers_with_date
+      sign_ready_headers            = if service == "s3", do: Map.put(headers_might_with_st, "x-amz-content-sha256", payload_sha256), else: headers_might_with_st
+      {sign_ready_headers, amz_date}
     end
 
     defunp gen_amz_date_and_put_date(headers :: v[Headers.t]) :: {AmzDate.t, Headers.t} do
@@ -82,32 +83,26 @@ defmodule AntikytheraAws.Signer do
       end
     end
 
-    defunp put_content_sha256_if_s3_request(headers        :: v[Headers.t],
-                                            service        :: v[String.t],
-                                            payload_sha256 :: v[String.t]) :: Headers.t do
-      if service == "s3", do: Map.put(headers, "x-amz-content-sha256", payload_sha256), else: headers
+    defunp make_canonical_request_with_shs(sign_ready_headers :: v[Headers.t],
+                                           method             :: v[Method.t],
+                                           path               :: v[UPath.t],
+                                           payload_sha256     :: v[String.t],
+                                           params             :: [{String.t, String.t}]) :: {String.t, String.t} do
+      chs  = canonical_headers_string(sign_ready_headers)
+      shs  = signed_headers_string(sign_ready_headers) # Declare headers used for signing (AWS will ignore other headers for signature verification)
+      creq = canonical_request(method, path, payload_sha256, chs, shs, params)
+      {creq, shs}
     end
 
-    defunpt signing_key(sak      :: v[String.t],
-                        amz_date :: v[AmzDate.t],
-                        region   :: v[String.t],
-                        service  :: v[String.t]) :: String.t do
-      short_date = String.slice(amz_date, 0..7)
-      @key_prefix <> sak
-      |> hmac_sha256(short_date)
-      |> hmac_sha256(region)
-      |> hmac_sha256(service)
-      |> hmac_sha256(@termination_string)
+    defunpt canonical_headers_string(downcased_headers :: v[Headers.t]) :: String.t do
+      Enum.sort(downcased_headers)
+      |> Enum.into("", fn {key, val} -> "#{key}:#{trimall(val)}\n" end) # Should end with trailing newline
     end
 
-    defunpt string_to_sign(amz_date  :: v[AmzDate.t],
-                           scope     :: v[String.t],
-                           c_request :: v[String.t]) :: String.t do
-      [@sign_algorithm, amz_date, scope, hex_sha256(c_request)] |> Enum.join("\n")
-    end
-
-    defunp credential_scope(amz_date :: v[AmzDate.t], region :: v[String.t], service :: v[String.t]) :: String.t do
-      [String.slice(amz_date, 0..7), region, service, @termination_string] |> Enum.join("/")
+    defunpt signed_headers_string(downcased_headers :: v[Headers.t]) :: String.t do
+      Map.keys(downcased_headers)
+      |> Enum.sort()
+      |> Enum.join(";")
     end
 
     defunp canonical_request(method         :: v[Method.t],
@@ -141,15 +136,40 @@ defmodule AntikytheraAws.Signer do
       |> Enum.map_join("&", fn {ckey, cval} -> "#{ckey}=#{cval}" end)
     end
 
-    defunpt canonical_headers_string(downcased_headers :: v[Headers.t]) :: String.t do
-      Enum.sort(downcased_headers)
-      |> Enum.into("", fn {key, val} -> "#{key}:#{trimall(val)}\n" end) # Should end with trailing newline
+    defunp compute_signature(aki               :: v[String.t],
+                            sak               :: v[String.t],
+                            amz_date          :: v[AmzDate.t],
+                            region            :: v[String.t],
+                            service           :: v[String.t],
+                            canonical_request :: v[String.t],
+                            signed_headers_str :: v[String.t]) :: String.t do
+      skey  = signing_key(sak, amz_date, region, service)
+      scope = credential_scope(amz_date, region, service)
+      sts   = string_to_sign(amz_date, scope, canonical_request)
+      sign  = hex_hmac_sha256(skey, sts)
+      "#{@sign_algorithm} Credential=#{aki}/#{scope}, SignedHeaders=#{signed_headers_str}, Signature=#{sign}"
     end
 
-    defunpt signed_headers_string(downcased_headers :: v[Headers.t]) :: String.t do
-      Map.keys(downcased_headers)
-      |> Enum.sort()
-      |> Enum.join(";")
+    defunpt signing_key(sak      :: v[String.t],
+                        amz_date :: v[AmzDate.t],
+                        region   :: v[String.t],
+                        service  :: v[String.t]) :: String.t do
+      short_date = String.slice(amz_date, 0..7)
+      @key_prefix <> sak
+      |> hmac_sha256(short_date)
+      |> hmac_sha256(region)
+      |> hmac_sha256(service)
+      |> hmac_sha256(@termination_string)
+    end
+
+    defunp credential_scope(amz_date :: v[AmzDate.t], region :: v[String.t], service :: v[String.t]) :: String.t do
+      [String.slice(amz_date, 0..7), region, service, @termination_string] |> Enum.join("/")
+    end
+
+    defunpt string_to_sign(amz_date  :: v[AmzDate.t],
+                           scope     :: v[String.t],
+                           c_request :: v[String.t]) :: String.t do
+      [@sign_algorithm, amz_date, scope, hex_sha256(c_request)] |> Enum.join("\n")
     end
 
     defp hex_sha256(str),           do: Base.encode16(:crypto.hash(:sha256, str), case: :lower)
