@@ -134,14 +134,14 @@ defmodule AntikytheraAws.Signer.V4Test do
     catch_error V4.prepare_headers(@example_creds, @example_region, "iam", :get, path_with_qs, "", %{"host" => "example.com"}, [{"foo", "bar"}])
   end
 
-  test "prepare_headers/8 should generate 'x-amz-content-sha256' if service is S3 and method is POST or PUT" do
+  test "prepare_headers/8 should generate 'x-amz-content-sha256' if service is S3" do
     result = V4.prepare_headers(@example_creds, @example_region, "s3", :put, "/object_key", @example_payload, %{"host" => "example.com"}, [])
     assert result["x-amz-content-sha256"] == hex_sha256(@example_payload)
   end
 
-  test "prepare_headers/8 should not generate 'x-amz-content-sha256' if service is S3 and method is other than POST and PUT" do
-    result = V4.prepare_headers(@example_creds, @example_region, "s3", :get, "/", "", %{"host" => "example.com"}, [])
-    refute Map.has_key?(result, "x-amz-content-sha256")
+  test "prepare_headers/8 should generate 'x-amz-content-sha256' of an empty string if service is S3 and no payload" do
+    result = V4.prepare_headers(@example_creds, @example_region, "s3", :get, "/object_key", "", %{"host" => "example.com"}, [])
+    assert result["x-amz-content-sha256"] == hex_sha256("")
   end
 
   test "prepare_headers/8 should not generate 'x-amz-content-sha256' if service is not S3" do
