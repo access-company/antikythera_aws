@@ -145,7 +145,7 @@ defmodule AntikytheraAws.Signer.V4Test do
   end
 
   test "prepare_headers/8 should not generate 'x-amz-content-sha256' if service is not S3" do
-    result = V4.prepare_headers(@example_creds, @example_region, "iam", :put, "/object_key", @example_payload, %{"host" => "example.com"}, [])
+    result = V4.prepare_headers(@example_creds, @example_region, "iam", :put, "/some_api_path", @example_payload, %{"host" => "example.com"}, [])
     refute Map.has_key?(result, "x-amz-content-sha256")
   end
 end
