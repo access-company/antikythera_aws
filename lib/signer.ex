@@ -51,27 +51,28 @@ defmodule AntikytheraAws.Signer do
                           headers :: v[Headers.t],
                           params  :: [{String.t, String.t}]) :: Headers.t do
       if String.contains?(path, "?"), do: raise("`path` must not include query string part!")
-      payload_sha256                          = hex_sha256(payload)
-      {sign_ready_headers, amz_date}          = canonicalize_headers_with_amz_date(headers, st, service, payload_sha256)
-      {canonical_request, signed_headers_str} = make_canonical_request_with_shs(sign_ready_headers, method, path, payload_sha256, params)
-      signature                               = compute_signature(aki, sak, amz_date, region, service, canonical_request, signed_headers_str)
+      payload_sha256                 = hex_sha256(payload)
+      {sign_ready_headers, amz_date} = canonicalize_headers_with_amz_date(headers, st, service, payload_sha256)
+      signed_headers_str             = signed_headers_string(sign_ready_headers) # Declare headers used for signing (AWS will ignore other headers for signature verification)
+      canonical_request              = make_canonical_request(sign_ready_headers, signed_headers_str, method, path, payload_sha256, params)
+      signature                      = compute_signature(aki, sak, amz_date, region, service, canonical_request, signed_headers_str)
 
       Map.put(sign_ready_headers, "authorization", signature)
     end
 
     defunp canonicalize_headers_with_amz_date(headers        :: v[Headers.t],
-                                              st             :: v[nil | String.t],
+                                              security_token :: v[nil | String.t],
                                               service        :: v[String.t],
                                               payload_sha256 :: v[String.t]) :: {Headers.t, AmzDate.t} do
       downcased_headers = Map.new(headers, fn {key, val} -> {String.downcase(key), val} end)
       if !Map.has_key?(downcased_headers, "host"), do: raise("'host' header is required!")
-      {amz_date, headers_with_date} = gen_amz_date_and_put_date(downcased_headers)
-      headers_might_with_st         = if st, do: Map.put(headers_with_date, "x-amz-security-token", st), else: headers_with_date
+      {amz_date, headers_with_date} = gen_amz_date_with_added_headers(downcased_headers)
+      headers_might_with_st         = if security_token , do: Map.put(headers_with_date    , "x-amz-security-token", security_token), else: headers_with_date
       sign_ready_headers            = if service == "s3", do: Map.put(headers_might_with_st, "x-amz-content-sha256", payload_sha256), else: headers_might_with_st
       {sign_ready_headers, amz_date}
     end
 
-    defunp gen_amz_date_and_put_date(headers :: v[Headers.t]) :: {AmzDate.t, Headers.t} do
+    defunp gen_amz_date_with_added_headers(headers :: v[Headers.t]) :: {AmzDate.t, Headers.t} do
       case headers do
         %{"x-amz-date" => ad} -> {ad, headers}
         %{"date" => date}     ->
@@ -83,41 +84,25 @@ defmodule AntikytheraAws.Signer do
       end
     end
 
-    defunp make_canonical_request_with_shs(sign_ready_headers :: v[Headers.t],
-                                           method             :: v[Method.t],
-                                           path               :: v[UPath.t],
-                                           payload_sha256     :: v[String.t],
-                                           params             :: [{String.t, String.t}]) :: {String.t, String.t} do
-      chs  = canonical_headers_string(sign_ready_headers)
-      shs  = signed_headers_string(sign_ready_headers) # Declare headers used for signing (AWS will ignore other headers for signature verification)
-      creq = canonical_request(method, path, payload_sha256, chs, shs, params)
-      {creq, shs}
-    end
-
-    defunpt canonical_headers_string(downcased_headers :: v[Headers.t]) :: String.t do
-      Enum.sort(downcased_headers)
-      |> Enum.into("", fn {key, val} -> "#{key}:#{trimall(val)}\n" end) # Should end with trailing newline
-    end
-
     defunpt signed_headers_string(downcased_headers :: v[Headers.t]) :: String.t do
       Map.keys(downcased_headers)
       |> Enum.sort()
       |> Enum.join(";")
     end
 
-    defunp canonical_request(method         :: v[Method.t],
-                             path           :: v[UPath.t],
-                             payload_sha256 :: v[String.t],
-                             cheaders_str   :: v[String.t],
-                             sheaders_str   :: v[String.t],
-                             params         :: [{String.t, String.t}]) :: String.t do
+    defunp make_canonical_request(sign_ready_headers :: v[Headers.t],
+                                  signed_headers_str :: v[String.t],
+                                  method             :: v[Method.t],
+                                  path               :: v[UPath.t],
+                                  payload_sha256     :: v[String.t],
+                                  params             :: [{String.t, String.t}]) :: String.t do
       uppercase_method = Method.to_string(method)
       [
         uppercase_method,
         canonical_uri(path),
         canonical_query_string(params),
-        cheaders_str,
-        sheaders_str,
+        canonical_headers_string(sign_ready_headers),
+        signed_headers_str,
         payload_sha256,
       ] |> Enum.join("\n")
     end
@@ -136,13 +121,18 @@ defmodule AntikytheraAws.Signer do
       |> Enum.map_join("&", fn {ckey, cval} -> "#{ckey}=#{cval}" end)
     end
 
-    defunp compute_signature(aki               :: v[String.t],
-                            sak               :: v[String.t],
-                            amz_date          :: v[AmzDate.t],
-                            region            :: v[String.t],
-                            service           :: v[String.t],
-                            canonical_request :: v[String.t],
-                            signed_headers_str :: v[String.t]) :: String.t do
+    defunpt canonical_headers_string(downcased_headers :: v[Headers.t]) :: String.t do
+      Enum.sort(downcased_headers)
+      |> Enum.into("", fn {key, val} -> "#{key}:#{trimall(val)}\n" end) # Should end with trailing newline
+    end
+
+    defunp compute_signature(aki                :: v[String.t],
+                             sak                :: v[String.t],
+                             amz_date           :: v[AmzDate.t],
+                             region             :: v[String.t],
+                             service            :: v[String.t],
+                             canonical_request  :: v[String.t],
+                             signed_headers_str :: v[String.t]) :: String.t do
       skey  = signing_key(sak, amz_date, region, service)
       scope = credential_scope(amz_date, region, service)
       sts   = string_to_sign(amz_date, scope, canonical_request)
