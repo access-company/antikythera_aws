@@ -4,10 +4,11 @@ defmodule AntikytheraAws.Signer.V4Test do
   use Croma.TestCase
   alias AntikytheraAws.Auth.Credentials, as: Creds
 
-  @example_id     "AKIDEXAMPLE"
-  @example_secret "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
-  @example_creds  %Creds{access_key_id: @example_id, secret_access_key: @example_secret}
-  @example_region "us-east-1"
+  @example_id      "AKIDEXAMPLE"
+  @example_secret  "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+  @example_creds   %Creds{access_key_id: @example_id, secret_access_key: @example_secret}
+  @example_region  "us-east-1"
+  @example_payload "example payload"
 
   test "canonical_uri/1 should normalize path as per AWS specification" do
     [
@@ -54,9 +55,10 @@ defmodule AntikytheraAws.Signer.V4Test do
   end
 
   # Example from: http://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html
-  test "signing_key/4 should derive signing key" do
-    expected_key = <<196, 175, 177, 204, 87, 113, 216, 113, 118, 58, 57, 62, 68, 183, 3, 87, 27, 85, 204, 40, 66, 77, 26, 94, 134, 218, 110, 211, 193, 84, 164, 185>>
-    assert V4.signing_key(@example_secret, "20150830T123600Z", @example_region, "iam") == expected_key
+  test "signing_key/4 should derive signing key and credential scope" do
+    expected_key   = <<196, 175, 177, 204, 87, 113, 216, 113, 118, 58, 57, 62, 68, 183, 3, 87, 27, 85, 204, 40, 66, 77, 26, 94, 134, 218, 110, 211, 193, 84, 164, 185>>
+    expected_scope = "20150830/#{@example_region}/iam/aws4_request"
+    assert V4.signing_key_with_cscope(@example_secret, "20150830T123600Z", @example_region, "iam") == {expected_key, expected_scope}
   end
 
   # Example from: http://docs.aws.amazon.com/general/latest/gr/sigv4-add-signature-to-request.html
@@ -129,5 +131,20 @@ defmodule AntikytheraAws.Signer.V4Test do
   test "prepare_headers/8 should raise if `path` includes query string part" do
     path_with_qs = "/hoge?foo=bar"
     catch_error V4.prepare_headers(@example_creds, @example_region, "iam", :get, path_with_qs, "", %{"host" => "example.com"}, [{"foo", "bar"}])
+  end
+
+  test "prepare_headers/8 should generate 'x-amz-content-sha256' if service is S3" do
+    result = V4.prepare_headers(@example_creds, @example_region, "s3", :put, "/object_key", @example_payload, %{"host" => "example.com"}, [])
+    assert result["x-amz-content-sha256"] == V4.hex_sha256(@example_payload)
+  end
+
+  test "prepare_headers/8 should generate 'x-amz-content-sha256' of an empty string if service is S3 and no payload" do
+    result = V4.prepare_headers(@example_creds, @example_region, "s3", :get, "/object_key", "", %{"host" => "example.com"}, [])
+    assert result["x-amz-content-sha256"] == V4.hex_sha256("")
+  end
+
+  test "prepare_headers/8 should not generate 'x-amz-content-sha256' if service is not S3" do
+    result = V4.prepare_headers(@example_creds, @example_region, "iam", :put, "/some_api_path", @example_payload, %{"host" => "example.com"}, [])
+    refute Map.has_key?(result, "x-amz-content-sha256")
   end
 end
