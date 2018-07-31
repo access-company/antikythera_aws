@@ -130,27 +130,20 @@ defmodule AntikytheraAws.Signer do
                              service            :: v[String.t],
                              canonical_request  :: v[String.t],
                              signed_headers_str :: v[String.t]) :: String.t do
-      skey  = signing_key(sak, amz_date, region, service)
-      scope = credential_scope(amz_date, region, service)
-      sts   = string_to_sign(amz_date, scope, canonical_request)
-      sign  = hex_hmac_sha256(skey, sts)
-      "#{@sign_algorithm} Credential=#{aki}/#{scope}, SignedHeaders=#{signed_headers_str}, Signature=#{sign}"
+      {signing_key, cscope} = signing_key_with_cscope(sak, amz_date, region, service)
+      str_to_sign           = string_to_sign(amz_date, cscope, canonical_request)
+      sign                  = hex_hmac_sha256(str_to_sign, signing_key)
+      "#{@sign_algorithm} Credential=#{aki}/#{cscope}, SignedHeaders=#{signed_headers_str}, Signature=#{sign}"
     end
 
-    defunpt signing_key(sak      :: v[String.t],
-                        amz_date :: v[AmzDate.t],
-                        region   :: v[String.t],
-                        service  :: v[String.t]) :: String.t do
-      short_date = String.slice(amz_date, 0..7)
-      @key_prefix <> sak
-      |> hmac_sha256(short_date)
-      |> hmac_sha256(region)
-      |> hmac_sha256(service)
-      |> hmac_sha256(@termination_string)
-    end
-
-    defunp credential_scope(amz_date :: v[AmzDate.t], region :: v[String.t], service :: v[String.t]) :: String.t do
-      [String.slice(amz_date, 0..7), region, service, @termination_string] |> Enum.join("/")
+    defunpt signing_key_with_cscope(sak      :: v[String.t],
+                                    amz_date :: v[AmzDate.t],
+                                    region   :: v[String.t],
+                                    service  :: v[String.t]) :: {String.t, String.t} do
+      signing_key_elements = [String.slice(amz_date, 0..7), region, service, @termination_string]
+      credential_scope     = Enum.join(signing_key_elements, "/")
+      signing_key          = Enum.reduce(signing_key_elements, @key_prefix <> sak, &hmac_sha256/2)
+      {signing_key, credential_scope}
     end
 
     defunpt string_to_sign(amz_date  :: v[AmzDate.t],
@@ -160,8 +153,8 @@ defmodule AntikytheraAws.Signer do
     end
 
     defpt hex_sha256(str),           do: Base.encode16(:crypto.hash(:sha256, str), case: :lower)
-    defp  hmac_sha256(key, str),     do: :crypto.hmac(:sha256, key, str)
-    defp  hex_hmac_sha256(key, str), do: Base.encode16(hmac_sha256(key, str), case: :lower)
+    defp  hmac_sha256(str, key),     do: :crypto.hmac(:sha256, key, str)
+    defp  hex_hmac_sha256(str, key), do: Base.encode16(hmac_sha256(str, key), case: :lower)
 
     # Strip leading and trailing spaces and replace consecutive spaces to a single space
     defp trimall(str), do: String.trim(str) |> String.replace(~r/ +/, " ")
