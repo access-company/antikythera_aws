@@ -39,8 +39,6 @@ defmodule AntikytheraAws.Signer do
         - If neither exist, "x-amz-date" will be generated with current date
     - `params` must be decoded query strings, in a list of tuple-2
         - To convert from `Antikythera.Http.QueryParams` (which is `Croma.SubtypeOfMap`), just use `Map.to_list/1`
-
-    Note: "content-type" header is required for S3, but not generally.
     """
     defun prepare_headers(%Creds{access_key_id: aki, secret_access_key: sak, security_token: st} = _creds,
                           region  :: v[String.t],
