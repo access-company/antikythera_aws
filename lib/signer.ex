@@ -159,9 +159,9 @@ defmodule AntikytheraAws.Signer do
       [@sign_algorithm, amz_date, scope, hex_sha256(c_request)] |> Enum.join("\n")
     end
 
-    defp hex_sha256(str),           do: Base.encode16(:crypto.hash(:sha256, str), case: :lower)
-    defp hmac_sha256(key, str),     do: :crypto.hmac(:sha256, key, str)
-    defp hex_hmac_sha256(key, str), do: Base.encode16(hmac_sha256(key, str), case: :lower)
+    defpt hex_sha256(str),           do: Base.encode16(:crypto.hash(:sha256, str), case: :lower)
+    defp  hmac_sha256(key, str),     do: :crypto.hmac(:sha256, key, str)
+    defp  hex_hmac_sha256(key, str), do: Base.encode16(hmac_sha256(key, str), case: :lower)
 
     # Strip leading and trailing spaces and replace consecutive spaces to a single space
     defp trimall(str), do: String.trim(str) |> String.replace(~r/ +/, " ")

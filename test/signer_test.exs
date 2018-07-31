@@ -10,8 +10,6 @@ defmodule AntikytheraAws.Signer.V4Test do
   @example_region  "us-east-1"
   @example_payload "example payload"
 
-  defp hex_sha256(str), do: Base.encode16(:crypto.hash(:sha256, str), case: :lower)
-
   test "canonical_uri/1 should normalize path as per AWS specification" do
     [
       {"/"              , "/"                      },
@@ -136,12 +134,12 @@ defmodule AntikytheraAws.Signer.V4Test do
 
   test "prepare_headers/8 should generate 'x-amz-content-sha256' if service is S3" do
     result = V4.prepare_headers(@example_creds, @example_region, "s3", :put, "/object_key", @example_payload, %{"host" => "example.com"}, [])
-    assert result["x-amz-content-sha256"] == hex_sha256(@example_payload)
+    assert result["x-amz-content-sha256"] == V4.hex_sha256(@example_payload)
   end
 
   test "prepare_headers/8 should generate 'x-amz-content-sha256' of an empty string if service is S3 and no payload" do
     result = V4.prepare_headers(@example_creds, @example_region, "s3", :get, "/object_key", "", %{"host" => "example.com"}, [])
-    assert result["x-amz-content-sha256"] == hex_sha256("")
+    assert result["x-amz-content-sha256"] == V4.hex_sha256("")
   end
 
   test "prepare_headers/8 should not generate 'x-amz-content-sha256' if service is not S3" do
