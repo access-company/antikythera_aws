@@ -56,7 +56,6 @@ defmodule AntikytheraAws.Signer do
       signed_headers_str             = signed_headers_string(sign_ready_headers) # Declare headers used for signing (AWS will ignore other headers for signature verification)
       canonical_request              = make_canonical_request(sign_ready_headers, signed_headers_str, method, path, payload_sha256, params)
       signature                      = compute_signature(aki, sak, amz_date, region, service, canonical_request, signed_headers_str)
-
       Map.put(sign_ready_headers, "authorization", signature)
     end
 
