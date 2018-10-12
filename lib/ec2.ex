@@ -40,6 +40,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
     |> Map.fetch!("AutoScalingGroups")
     |> hd() # Only 1 auto scaling group name is given to aws-cli describe-auto-scaling-groups command
     |> Map.fetch!("Instances")
+    |> Enum.filter(fn %{"HealthStatus" => s} -> s == "Healthy" end)
     |> Map.new(fn %{"InstanceId" => id, "LifecycleState" => state} -> {id, state == "InService"} end)
   end
 
