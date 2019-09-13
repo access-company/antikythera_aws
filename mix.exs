@@ -8,7 +8,7 @@ defmodule AntikytheraAws.MixProject do
   def project() do
     [
       app:             :antikythera_aws,
-      version:         "0.1.3",
+      version:         "0.1.4",
       elixir:          "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps:            deps(),
