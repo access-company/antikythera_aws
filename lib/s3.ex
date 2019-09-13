@@ -21,7 +21,7 @@ defmodule AntikytheraAws.S3 do
   end
 
   defun generate_presigned_urls(bucket :: v[String.t], obj_keys :: [String.t], expires_in_seconds :: v[pos_integer]) :: [String.t] do
-    expires = System.system_time(:seconds) + expires_in_seconds
+    expires = System.system_time(:second) + expires_in_seconds
     %Credentials{access_key_id: access_key, secret_access_key: secret_key, security_token: token} = InstanceProfileCredentials.credentials()
     Enum.map(obj_keys, fn obj_key ->
       generate_impl(bucket, obj_key, access_key, secret_key, token, expires)
