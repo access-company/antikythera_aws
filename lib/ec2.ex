@@ -56,4 +56,13 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
     %Httpc.Response{body: body} = Httpc.get!(@availability_zone_metadata_url)
     body
   end
+
+  @impl true
+  defun health_check_grace_period() :: pos_integer do
+    run_cli(["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name], fn j ->
+      Map.fetch!(j, "AutoScalingGroups")
+      |> hd() # Only 1 auto scaling group name is given to aws-cli describe-auto-scaling-groups command
+      |> Map.fetch!("HealthCheckGracePeriod")
+    end)
+  end
 end
