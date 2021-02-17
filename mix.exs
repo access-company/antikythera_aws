@@ -30,7 +30,7 @@ defmodule AntikytheraAws.MixProject do
       {:antikythera, "~> 0.2"},
       {:ex_doc     , "~> 0.18", [only: :dev , runtime: false]},
       {:dialyxir   , "~> 0.5" , [only: :dev , runtime: false]},
-      {:credo      , "~> 1.5" , [only: :dev , runtime: false]},
+      {:credo      , "~> 1.2.0" , [only: :dev , runtime: false]},
       {:meck       , "~> 0.8" , [only: :test]},
     ]
   end
