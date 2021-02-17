@@ -1,7 +1,6 @@
-defmodule AntikytheraAws.Ec2Test do
-  use ExUnit.Case
+defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
+  use Croma.TestCase
   alias Antikythera.Httpc
-  alias AntikytheraAws.Ec2.ClusterConfiguration
 
   @region_args                    ["--region", Application.fetch_env!(:antikythera_aws, :region)]
   @auto_scaling_group_name        Application.fetch_env!(:antikythera_aws, :auto_scaling_group_name)
