@@ -50,7 +50,7 @@
         {Credo.Check.Refactor.DoubleBooleanNegation},
         {Credo.Check.Refactor.FunctionArity, max_arity: 8},
         {Credo.Check.Refactor.LongQuoteBlocks},
-        {Credo.Check.Refactor.MapInto},
+        {Credo.Check.Refactor.MapInto, false},
         {Credo.Check.Refactor.MatchInCondition},
         {Credo.Check.Refactor.ModuleDependencies, false},
         {Credo.Check.Refactor.NegatedConditionsInUnless},
@@ -78,6 +78,7 @@
         {Credo.Check.Warning.UnusedRegexOperation},
         {Credo.Check.Warning.UnusedStringOperation},
         {Credo.Check.Warning.UnusedTupleOperation},
+        {Credo.Check.Warning.LazyLogging, false},
       ]
     }
   ]
