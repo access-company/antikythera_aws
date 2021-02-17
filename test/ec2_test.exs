@@ -57,13 +57,13 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
       assert url == @availability_zone_metadata_url
       %Httpc.Response{
         status: 200,
-        body: "ap-northeast-1",
+        body: "ap-northeast-1a",
         headers: %{},
         cookies: %{}
       }
     end)
 
-    assert ClusterConfiguration.zone_of_this_host() == "ap-northeast-1"
+    assert ClusterConfiguration.zone_of_this_host() == "ap-northeast-1a"
   end
 
   test "health_check_grace_period/0 should return the health check grace period of the Auto Scaling group" do
