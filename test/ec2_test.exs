@@ -11,6 +11,14 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
   @node_a_private_dns_name        "ip-172-31-22-131.ap-northeast-1.compute.internal"
   @node_b_private_dns_name        "ip-172-31-22-132.ap-northeast-1.compute.internal"
 
+  setup do
+    :meck.new(System, [:passthrough])
+
+    on_exit(fn ->
+      :meck.unload()
+    end)
+  end
+
   test "running_hosts/0 should return the healthy EC2 instances with the status of InService" do
     :meck.expect(System, :cmd, fn(command, [_, _, aws_command | _] = args, opts) ->
       assert command == "aws"
