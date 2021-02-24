@@ -5,9 +5,9 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
   @region_args                    ["--region", Application.fetch_env!(:antikythera_aws, :region)]
   @auto_scaling_group_name        Application.fetch_env!(:antikythera_aws, :auto_scaling_group_name)
   @availability_zone_metadata_url "http://169.254.169.254/latest/meta-data/placement/availability-zone"
-  @noda_a_instance_id             "i-0d87927817101e3d1"
-  @noda_b_instance_id             "i-0d87927817101e3d2"
-  @noda_c_instance_id             "i-0d87927817101e3d3"
+  @node_a_instance_id             "i-0d87927817101e3d1"
+  @node_b_instance_id             "i-0d87927817101e3d2"
+  @node_c_instance_id             "i-0d87927817101e3d3"
   @node_a_private_dns_name        "ip-172-31-22-131.ap-northeast-1.compute.internal"
   @node_b_private_dns_name        "ip-172-31-22-132.ap-northeast-1.compute.internal"
 
@@ -32,23 +32,23 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
               AutoScalingGroups: [
                 %{
                   Instances: [
-                    %{InstanceId: @noda_a_instance_id, LifecycleState: "InService",        HealthStatus: "Healthy"},
-                    %{InstanceId: @noda_b_instance_id, LifecycleState: "Terminating:Wait", HealthStatus: "Healthy"},
-                    %{InstanceId: @noda_c_instance_id, LifecycleState: "Terminating:Wait", HealthStatus: "Unhealthy"}
+                    %{InstanceId: @node_a_instance_id, LifecycleState: "InService",        HealthStatus: "Healthy"},
+                    %{InstanceId: @node_b_instance_id, LifecycleState: "Terminating:Wait", HealthStatus: "Healthy"},
+                    %{InstanceId: @node_c_instance_id, LifecycleState: "Terminating:Wait", HealthStatus: "Unhealthy"}
                   ]
                 }
               ]
             })
           {json, 0}
         "ec2" ->
-          assert args == @region_args ++ ["ec2", "describe-instances", "--instance-ids", @noda_a_instance_id, @noda_b_instance_id]
+          assert args == @region_args ++ ["ec2", "describe-instances", "--instance-ids", @node_a_instance_id, @node_b_instance_id]
           json =
             Poison.encode!(%{
               Reservations: [
                 %{
                   Instances: [
-                    %{InstanceId: @noda_a_instance_id, PrivateDnsName: @node_a_private_dns_name},
-                    %{InstanceId: @noda_b_instance_id, PrivateDnsName: @node_b_private_dns_name}
+                    %{InstanceId: @node_a_instance_id, PrivateDnsName: @node_a_private_dns_name},
+                    %{InstanceId: @node_b_instance_id, PrivateDnsName: @node_b_private_dns_name}
                   ]
                 }
               ]
