@@ -28,7 +28,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
         "autoscaling" ->
           assert args == @region_args ++ ["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name]
           json =
-            Poison.encode!(%{
+            Jason.encode!(%{
               AutoScalingGroups: [
                 %{
                   Instances: [
@@ -43,7 +43,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
         "ec2" ->
           assert args == @region_args ++ ["ec2", "describe-instances", "--instance-ids", @node_a_instance_id, @node_b_instance_id]
           json =
-            Poison.encode!(%{
+            Jason.encode!(%{
               Reservations: [
                 %{
                   Instances: [
@@ -79,7 +79,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
       assert args == @region_args ++ ["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name]
 
       json =
-        Poison.encode!(%{
+        Jason.encode!(%{
           AutoScalingGroups: [
             %{
               HealthCheckGracePeriod: 400

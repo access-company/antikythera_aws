@@ -28,7 +28,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   defp run_cli(args, f) do
     args_all = ["--region", @region | args]
     case System.cmd("aws", args_all, [stderr_to_stdout: true]) do
-      {json, 0}          -> f.(Poison.decode!(json))
+      {json, 0}          -> f.(Jason.decode!(json))
       {output, _nonzero} ->
         L.error("aws-cli with args #{inspect(args_all)} returned nonzero status: #{output}")
         {:error, :script_error}
