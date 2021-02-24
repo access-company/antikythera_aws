@@ -58,7 +58,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   end
 
   @impl true
-  defun health_check_grace_period() :: pos_integer do
+  defun health_check_grace_period_in_seconds() :: pos_integer do
     run_cli(["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name], fn j ->
       Map.fetch!(j, "AutoScalingGroups")
       |> hd() # Only 1 auto scaling group name is given to aws-cli describe-auto-scaling-groups command
