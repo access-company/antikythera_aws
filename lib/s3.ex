@@ -103,7 +103,10 @@ defmodule AntikytheraAws.S3 do
       ]
       args =
         if gzip? do
-          [] = :os.cmd('gzip --stdout #{path} > #{path}.gz') # `gzip` in Amazon Linux (version 1.5 as of 2018/01) does not have "--keep" option
+          # `gzip` in Amazon Linux (version 2 as of 2021/02) does not have "--keep" option
+          {compressed, 0} = System.cmd("gzip", ["--stdout", path])
+          File.write!("#{path}.gz", compressed)
+
           common_args ++ ["--body", "#{path}.gz", "--content-encoding", "gzip"]
         else
           common_args ++ ["--body", path]
