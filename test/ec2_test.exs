@@ -13,10 +13,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
 
   setup do
     :meck.new(System, [:passthrough])
-
-    on_exit(fn ->
-      :meck.unload()
-    end)
+    on_exit(&:meck.unload/0)
   end
 
   test "running_hosts/0 should return the healthy EC2 instances with the status of InService" do
