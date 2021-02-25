@@ -74,21 +74,33 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
     assert ClusterConfiguration.zone_of_this_host() == "ap-northeast-1a"
   end
 
-  test "health_check_grace_period_in_seconds/0 should return the health check grace period of the Auto Scaling group" do
-    :meck.expect(System, :cmd, fn(_, args, _) ->
-      assert args == @region_args ++ ["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name]
+  describe "health_check_grace_period_in_seconds/0" do
+    test "should return the health check grace period of the Auto Scaling group" do
+      :meck.expect(System, :cmd, fn(_, args, _) ->
+        assert args == @region_args ++ ["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name]
 
-      json =
-        Jason.encode!(%{
-          AutoScalingGroups: [
-            %{
-              HealthCheckGracePeriod: 400
-            }
-          ]
-        })
-      {json, 0}
-    end)
+        json =
+          Jason.encode!(%{
+            AutoScalingGroups: [
+              %{
+                HealthCheckGracePeriod: 400
+              }
+            ]
+          })
+        {json, 0}
+      end)
 
-    assert ClusterConfiguration.health_check_grace_period_in_seconds() == 400
+      assert ClusterConfiguration.health_check_grace_period_in_seconds() == 400
+    end
+
+    test "should return the default value if fetching the health check grace period failed" do
+      :meck.expect(System, :cmd, fn(_, args, _) ->
+        assert args == @region_args ++ ["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name]
+
+        {"Error happened!", 1}
+      end)
+
+      assert ClusterConfiguration.health_check_grace_period_in_seconds() == 300
+    end
   end
 end
