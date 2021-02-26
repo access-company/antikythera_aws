@@ -28,7 +28,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   defp run_cli(args, f) do
     args_all = ["--region", @region | args]
     case System.cmd("aws", args_all, [stderr_to_stdout: true]) do
-      {json, 0}          -> f.(Poison.decode!(json))
+      {json, 0}          -> f.(Jason.decode!(json))
       {output, _nonzero} ->
         L.error("aws-cli with args #{inspect(args_all)} returned nonzero status: #{output}")
         {:error, :script_error}
@@ -55,5 +55,22 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   defun zone_of_this_host() :: String.t do
     %Httpc.Response{body: body} = Httpc.get!(@availability_zone_metadata_url)
     body
+  end
+
+  @default_health_check_grace_period 300
+
+  @impl true
+  defun health_check_grace_period_in_seconds() :: non_neg_integer do
+    run_cli(["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name], fn j ->
+      Map.fetch!(j, "AutoScalingGroups")
+      |> hd() # Only 1 auto scaling group name is given to aws-cli describe-auto-scaling-groups command
+      |> Map.fetch!("HealthCheckGracePeriod")
+    end)
+    |> case do
+      {:error, :script_error} ->
+        L.error("Failed to fetch the health check grace period by aws-cli describe-auto-scaling-groups command, so the default value: #{@default_health_check_grace_period} will be used")
+        @default_health_check_grace_period
+      health_check_grace_period -> health_check_grace_period
+    end
   end
 end

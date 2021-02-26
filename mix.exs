@@ -8,7 +8,7 @@ defmodule AntikytheraAws.MixProject do
   def project() do
     [
       app:             :antikythera_aws,
-      version:         "0.1.4",
+      version:         "0.2.0",
       elixir:          "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps:            deps(),
@@ -27,10 +27,10 @@ defmodule AntikytheraAws.MixProject do
 
   defp deps() do
     [
-      {:antikythera, "~> 0.2"},
+      {:antikythera, "~> 0.4"},
       {:ex_doc     , "~> 0.18", [only: :dev , runtime: false]},
       {:dialyxir   , "~> 0.5" , [only: :dev , runtime: false]},
-      {:credo      , "~> 0.8" , [only: :dev , runtime: false]},
+      {:credo      , "~> 1.4.0" , [only: :dev , runtime: false]},
       {:meck       , "~> 0.8" , [only: :test]},
     ]
   end
