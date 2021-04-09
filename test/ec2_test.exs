@@ -90,6 +90,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
       assert ClusterConfiguration.health_check_grace_period_in_seconds() == 400
     end
 
+    @tag capture_log: true
     test "should return the default value if fetching the health check grace period failed" do
       :meck.expect(System, :cmd, fn(_, args, _) ->
         assert args == @region_args ++ ["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name]
