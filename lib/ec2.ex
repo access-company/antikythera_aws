@@ -68,7 +68,9 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
     end)
     |> case do
       {:error, :script_error} ->
-        L.error("Failed to fetch the health check grace period by aws-cli describe-auto-scaling-groups command, so the default value: #{@default_health_check_grace_period} will be used")
+        msg = "Failed to fetch the health check grace period by aws-cli describe-auto-scaling-groups command," <>
+          " so the default value: #{@default_health_check_grace_period} will be used"
+        L.error(msg)
         @default_health_check_grace_period
       health_check_grace_period -> health_check_grace_period
     end

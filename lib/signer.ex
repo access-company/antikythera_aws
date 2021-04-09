@@ -134,7 +134,8 @@ defmodule AntikytheraAws.Signer do
       {signing_key, cscope} = signing_key_with_cscope(sak, amz_date, region, service)
       str_to_sign           = string_to_sign(amz_date, cscope, canonical_request)
       sign                  = hex_hmac_sha256(str_to_sign, signing_key)
-      "#{@sign_algorithm} Credential=#{aki}/#{cscope}, SignedHeaders=#{signed_headers_str}, Signature=#{sign}"
+      "#{@sign_algorithm} Credential=#{aki}/#{cscope}," <>
+        " SignedHeaders=#{signed_headers_str}, Signature=#{sign}"
     end
 
     defunpt signing_key_with_cscope(sak      :: v[String.t],
