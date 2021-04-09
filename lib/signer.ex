@@ -65,8 +65,18 @@ defmodule AntikytheraAws.Signer do
       downcased_headers = Map.new(headers, fn {key, val} -> {String.downcase(key), val} end)
       if !Map.has_key?(downcased_headers, "host"), do: raise("'host' header is required!")
       {amz_date, headers1} = gen_amz_date_with_added_headers(downcased_headers)
-      headers2             = if security_token , do: Map.put(headers1, "x-amz-security-token", security_token), else: headers1
-      sign_ready_headers   = if service == "s3", do: Map.put(headers2, "x-amz-content-sha256", payload_sha256), else: headers2
+      headers2 =
+        if security_token do
+          Map.put(headers1, "x-amz-security-token", security_token)
+        else
+          headers1
+        end
+      sign_ready_headers =
+        if service == "s3" do
+          Map.put(headers2, "x-amz-content-sha256", payload_sha256)
+        else
+          headers2
+        end
       {sign_ready_headers, amz_date}
     end
 
