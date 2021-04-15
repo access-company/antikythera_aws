@@ -12,11 +12,16 @@ defmodule AntikytheraAws.Auth.InstanceProfileCredentialsTest do
   @role_endpoint          "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
   @test_role              "test_role"
   @creds_endpoint         @role_endpoint <> @test_role
-  @creds_endpoint_success {:ok, %Res{body: ~S({"Code"  : "Success", "LastUpdated" : "2016-01-01T00:00:00Z",
-                                               "Token" : "token",   "Expiration"  : "2099-12-31T23:59:59Z",
-                                               "Type"  : "AWS-HMAC","AccessKeyId" : "aws_access_key_id",
-                                               "SecretAccessKey" : "aws_secret_access_key"}),
-                                     headers: %{}, status: 200}}
+  @creds_endpoint_success {:ok,
+                           %Res{
+                             body:
+                               ~S({"Code"  : "Success", "LastUpdated" : "2016-01-01T00:00:00Z",
+                                   "Token" : "token",   "Expiration"  : "2099-12-31T23:59:59Z",
+                                   "Type"  : "AWS-HMAC","AccessKeyId" : "aws_access_key_id",
+                                   "SecretAccessKey" : "aws_secret_access_key"}),
+                             headers: %{},
+                             status: 200
+                           }}
   @system_cache_key       :aws_auth_instance_profile_credentials_cache
 
   defp creds_endpoint_expect(res) do
