@@ -9,26 +9,41 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   alias Antikythera.Httpc
   require AntikytheraCore.Logger, as: L
 
-  @region                         Application.fetch_env!(:antikythera_aws, :region)
-  @auto_scaling_group_name        Application.fetch_env!(:antikythera_aws, :auto_scaling_group_name)
+  @region Application.fetch_env!(:antikythera_aws, :region)
+  @auto_scaling_group_name Application.fetch_env!(:antikythera_aws, :auto_scaling_group_name)
   @availability_zone_metadata_url "http://169.254.169.254/latest/meta-data/placement/availability-zone"
 
   @impl true
-  defun running_hosts() :: R.t(%{String.t => boolean}) do
-    run_cli(["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name], fn j1 ->
-      id_status_map = make_id_status_map(j1)
-      run_cli(["ec2", "describe-instances", "--instance-ids" | Map.keys(id_status_map)], fn j2 ->
-        make_id_private_dns_name_map(j2)
-        |> Map.new(fn {id, dns_name} -> {dns_name, Map.fetch!(id_status_map, id)} end)
-        |> R.pure()
-      end)
-    end)
+  defun running_hosts() :: R.t(%{String.t() => boolean}) do
+    run_cli(
+      [
+        "autoscaling",
+        "describe-auto-scaling-groups",
+        "--auto-scaling-group-names",
+        @auto_scaling_group_name
+      ],
+      fn j1 ->
+        id_status_map = make_id_status_map(j1)
+
+        run_cli(
+          ["ec2", "describe-instances", "--instance-ids" | Map.keys(id_status_map)],
+          fn j2 ->
+            make_id_private_dns_name_map(j2)
+            |> Map.new(fn {id, dns_name} -> {dns_name, Map.fetch!(id_status_map, id)} end)
+            |> R.pure()
+          end
+        )
+      end
+    )
   end
 
   defp run_cli(args, f) do
     args_all = ["--region", @region | args]
-    case System.cmd("aws", args_all, [stderr_to_stdout: true]) do
-      {json, 0}          -> f.(Jason.decode!(json))
+
+    case System.cmd("aws", args_all, stderr_to_stdout: true) do
+      {json, 0} ->
+        f.(Jason.decode!(json))
+
       {output, _nonzero} ->
         L.error("aws-cli with args #{inspect(args_all)} returned nonzero status: #{output}")
         {:error, :script_error}
@@ -38,10 +53,13 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   defp make_id_status_map(decoded) do
     decoded
     |> Map.fetch!("AutoScalingGroups")
-    |> hd() # Only 1 auto scaling group name is given to aws-cli describe-auto-scaling-groups command
+    # Only 1 auto scaling group name is given to aws-cli describe-auto-scaling-groups command
+    |> hd()
     |> Map.fetch!("Instances")
     |> Enum.filter(fn %{"HealthStatus" => s} -> s == "Healthy" end)
-    |> Map.new(fn %{"InstanceId" => id, "LifecycleState" => state} -> {id, state == "InService"} end)
+    |> Map.new(fn %{"InstanceId" => id, "LifecycleState" => state} ->
+      {id, state == "InService"}
+    end)
   end
 
   defp make_id_private_dns_name_map(decoded) do
@@ -52,7 +70,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   end
 
   @impl true
-  defun zone_of_this_host() :: String.t do
+  defun zone_of_this_host() :: String.t() do
     %Httpc.Response{body: body} = Httpc.get!(@availability_zone_metadata_url)
     body
   end
@@ -61,18 +79,31 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
 
   @impl true
   defun health_check_grace_period_in_seconds() :: non_neg_integer do
-    run_cli(["autoscaling", "describe-auto-scaling-groups", "--auto-scaling-group-names", @auto_scaling_group_name], fn j ->
-      Map.fetch!(j, "AutoScalingGroups")
-      |> hd() # Only 1 auto scaling group name is given to aws-cli describe-auto-scaling-groups command
-      |> Map.fetch!("HealthCheckGracePeriod")
-    end)
+    run_cli(
+      [
+        "autoscaling",
+        "describe-auto-scaling-groups",
+        "--auto-scaling-group-names",
+        @auto_scaling_group_name
+      ],
+      fn j ->
+        Map.fetch!(j, "AutoScalingGroups")
+        # Only 1 auto scaling group name is given to aws-cli describe-auto-scaling-groups command
+        |> hd()
+        |> Map.fetch!("HealthCheckGracePeriod")
+      end
+    )
     |> case do
       {:error, :script_error} ->
-        msg = "Failed to fetch the health check grace period by aws-cli describe-auto-scaling-groups command," <>
-          " so the default value: #{@default_health_check_grace_period} will be used"
+        msg =
+          "Failed to fetch the health check grace period by aws-cli describe-auto-scaling-groups command," <>
+            " so the default value: #{@default_health_check_grace_period} will be used"
+
         L.error(msg)
         @default_health_check_grace_period
-      health_check_grace_period -> health_check_grace_period
+
+      health_check_grace_period ->
+        health_check_grace_period
     end
   end
 end
