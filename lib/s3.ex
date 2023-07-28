@@ -41,8 +41,7 @@ defmodule AntikytheraAws.S3 do
   end
 
   defp generate_impl(bucket, obj_key, access_key, secret_key, token, expires) do
-    signature_raw = "GET\n\n\n#{expires}\nx-amz-security-token:#{token}\n/#{bucket}/#{obj_key}"
-    signature = :crypto.hmac(:sha, secret_key, signature_raw) |> Base.encode64()
+    signature = generate_signature(bucket, obj_key, secret_key, token, expires)
 
     params = [
       {"AWSAccessKeyId", access_key},
@@ -52,6 +51,11 @@ defmodule AntikytheraAws.S3 do
     ]
 
     "https://s3-#{@region}.amazonaws.com/#{bucket}/#{obj_key}?#{URI.encode_query(params)}"
+  end
+
+  defpt generate_signature(bucket, obj_key, secret_key, token, expires) do
+    signature_raw = "GET\n\n\n#{expires}\nx-amz-security-token:#{token}\n/#{bucket}/#{obj_key}"
+    :crypto.hmac(:sha, secret_key, signature_raw) |> Base.encode64()
   end
 
   defmodule LogStorage do
