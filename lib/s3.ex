@@ -55,7 +55,7 @@ defmodule AntikytheraAws.S3 do
 
   defpt generate_signature(bucket, obj_key, secret_key, token, expires) do
     signature_raw = "GET\n\n\n#{expires}\nx-amz-security-token:#{token}\n/#{bucket}/#{obj_key}"
-    :crypto.hmac(:sha, secret_key, signature_raw) |> Base.encode64()
+    :crypto.mac(:hmac, :sha, secret_key, signature_raw) |> Base.encode64()
   end
 
   defmodule LogStorage do
