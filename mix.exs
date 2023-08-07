@@ -9,7 +9,7 @@ defmodule AntikytheraAws.MixProject do
     [
       app: :antikythera_aws,
       version: "0.2.0",
-      elixir: "~> 1.5",
+      elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       source_url: @github_url,
