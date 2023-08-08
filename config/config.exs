@@ -1,6 +1,6 @@
 # Copyright(c) 2015-2023 ACCESS CO., LTD. All rights reserved.
 
-use Mix.Config
+import Config, only: [config: 2, import_config: 1]
 
 # Import mandatory antikythera configurations for development/testing.
 # They should be supplied by antikythera instances when this package is used as a dependency.

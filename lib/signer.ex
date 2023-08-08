@@ -211,7 +211,7 @@ defmodule AntikytheraAws.Signer do
     end
 
     defpt hex_sha256(str), do: Base.encode16(:crypto.hash(:sha256, str), case: :lower)
-    defp hmac_sha256(str, key), do: :crypto.hmac(:sha256, key, str)
+    defp hmac_sha256(str, key), do: :crypto.mac(:hmac, :sha256, key, str)
     defp hex_hmac_sha256(str, key), do: Base.encode16(hmac_sha256(str, key), case: :lower)
 
     # Strip leading and trailing spaces and replace consecutive spaces to a single space
