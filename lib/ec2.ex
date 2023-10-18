@@ -67,6 +67,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
     |> Map.fetch!("Reservations")
     |> Enum.flat_map(fn %{"Instances" => is} -> is end)
     |> Map.new(fn %{"InstanceId" => id, "PrivateDnsName" => name} -> {id, name} end)
+    |> Enum.reject(fn {_id, name} -> String.length(name) == 0 end)
   end
 
   @impl true
