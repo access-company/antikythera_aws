@@ -7,6 +7,8 @@ defmodule AntikytheraAws.Auth do
   Provides a method to get AWS Access Key (access key ID, secret access key, and security token).
   """
 
+  alias AntikytheraAws.Imds
+
   defmodule SourceType do
     use Croma.SubtypeOfAtom, values: [:instance], default: :instance
   end
@@ -23,11 +25,11 @@ defmodule AntikytheraAws.Auth do
   end
 
   defmodule InstanceProfileCredentials do
-    alias Antikythera.{Time, Httpc}
+    alias Antikythera.Time
     alias Antikythera.Httpc.Response, as: Res
     alias AntikytheraCore.Ets.SystemCache
 
-    @credentials_endpoint "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+    @credentials_endpoint_path "/latest/meta-data/iam/security-credentials/"
     @system_cache_key :aws_auth_instance_profile_credentials_cache
     @default_try_count 2
     @refresh_timing -180_000
@@ -65,8 +67,8 @@ defmodule AntikytheraAws.Auth do
 
     defp send_credentials_request() do
       Croma.Result.m do
-        %Res{body: role_name} <- Httpc.get(@credentials_endpoint)
-        %Res{body: creds} <- Httpc.get(@credentials_endpoint <> role_name)
+        %Res{body: role_name} <- Imds.get(@credentials_endpoint_path)
+        %Res{body: creds} <- Imds.get(@credentials_endpoint_path <> role_name)
         Poison.decode(creds)
       end
     end

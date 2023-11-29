@@ -2,7 +2,7 @@
 
 defmodule AntikytheraAws.Auth.InstanceProfileCredentialsTest do
   use Croma.TestCase
-  alias Antikythera.{Time, Httpc}
+  alias Antikythera.Time
   alias Antikythera.Httpc.Response, as: Res
   alias AntikytheraCore.Ets.SystemCache
   alias AntikytheraAws.Auth.Credentials, as: Creds
@@ -13,9 +13,9 @@ defmodule AntikytheraAws.Auth.InstanceProfileCredentialsTest do
     security_token: "token",
     source_type: :instance
   }
-  @role_endpoint "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+  @role_endpoint_path "/latest/meta-data/iam/security-credentials/"
   @test_role "test_role"
-  @creds_endpoint @role_endpoint <> @test_role
+  @creds_endpoint_path @role_endpoint_path <> @test_role
   @creds_endpoint_success {:ok,
                            %Res{
                              body:
@@ -29,15 +29,15 @@ defmodule AntikytheraAws.Auth.InstanceProfileCredentialsTest do
   @system_cache_key :aws_auth_instance_profile_credentials_cache
 
   defp creds_endpoint_expect(res) do
-    :meck.expect(Httpc, :get, fn
-      @role_endpoint -> {:ok, %Res{body: @test_role, headers: %{}, status: 200}}
-      @creds_endpoint -> if is_function(res), do: res.(), else: res
+    :meck.expect(AntikytheraAws.Imds, :get, fn
+      @role_endpoint_path -> {:ok, %Res{body: @test_role, headers: %{}, status: 200}}
+      @creds_endpoint_path -> if is_function(res), do: res.(), else: res
       other -> :meck.passthrough([other])
     end)
   end
 
   setup do
-    :meck.new(Httpc, [:passthrough])
+    :meck.new(AntikytheraAws.Imds, [:passthrough])
 
     on_exit(fn ->
       :meck.unload()
