@@ -4,7 +4,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
 
   @region_args ["--region", Application.fetch_env!(:antikythera_aws, :region)]
   @auto_scaling_group_name Application.fetch_env!(:antikythera_aws, :auto_scaling_group_name)
-  @availability_zone_metadata_url "http://169.254.169.254/latest/meta-data/placement/availability-zone"
+  @availability_zone_metadata_path "/latest/meta-data/placement/availability-zone"
   @node_a_instance_id "i-0d87927817101e3d1"
   @node_b_instance_id "i-0d87927817101e3d2"
   @node_c_instance_id "i-0d87927817101e3d3"
@@ -91,8 +91,8 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
   end
 
   test "zone_of_this_host/0 should return the Availability Zone of this EC2 instance" do
-    :meck.expect(Httpc, :get!, fn url ->
-      assert url == @availability_zone_metadata_url
+    :meck.expect(AntikytheraAws.Imds, :get!, fn path ->
+      assert path == @availability_zone_metadata_path
 
       %Httpc.Response{
         status: 200,

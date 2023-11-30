@@ -7,11 +7,12 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   @behaviour AntikytheraEal.ClusterConfiguration.Behaviour
 
   alias Antikythera.Httpc
+  alias AntikytheraAws.Imds
   require AntikytheraCore.Logger, as: L
 
   @region Application.fetch_env!(:antikythera_aws, :region)
   @auto_scaling_group_name Application.fetch_env!(:antikythera_aws, :auto_scaling_group_name)
-  @availability_zone_metadata_url "http://169.254.169.254/latest/meta-data/placement/availability-zone"
+  @availability_zone_metadata_path "/latest/meta-data/placement/availability-zone"
 
   @impl true
   defun running_hosts() :: R.t(%{String.t() => boolean}) do
@@ -72,7 +73,7 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
 
   @impl true
   defun zone_of_this_host() :: String.t() do
-    %Httpc.Response{body: body} = Httpc.get!(@availability_zone_metadata_url)
+    %Httpc.Response{body: body} = Imds.get!(@availability_zone_metadata_path)
     body
   end
 
