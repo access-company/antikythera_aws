@@ -5,10 +5,19 @@ defmodule AntikytheraAws.MixProject do
 
   @github_url "https://github.com/access-company/antikythera_aws"
 
+  @version "0.3.0"
+  @release false
+
+  if @release do
+    @source_ref @version
+  else
+    @source_ref "master"
+  end
+
   def project() do
     [
       app: :antikythera_aws,
-      version: "0.3.0",
+      version: @version,
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -16,7 +25,8 @@ defmodule AntikytheraAws.MixProject do
       homepage_url: @github_url,
       description:
         "Implementations of some of pluggable modules in the Antikythera Framework, using AWS services.",
-      package: package()
+      package: package(),
+      docs: [source_ref: @source_ref]
     ]
   end
 
