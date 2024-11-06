@@ -7,7 +7,7 @@ defmodule AntikytheraAws.S3 do
   alias AntikytheraCore.Path, as: CorePath
   alias AntikytheraAws.Auth.{Credentials, InstanceProfileCredentials}
 
-  @region Application.fetch_env!(:antikythera_aws, :region)
+  @region Application.compile_env!(:antikythera_aws, :region)
 
   defun list_objects(bucket :: v[String.t()], key_prefix :: v[String.t()]) :: [
           {String.t(), non_neg_integer}
@@ -62,7 +62,7 @@ defmodule AntikytheraAws.S3 do
     alias AntikytheraCore.Cluster.NodeId
     alias AntikytheraAws.S3
 
-    @bucket_name Application.fetch_env!(:antikythera_aws, :log_storage_bucket)
+    @bucket_name Application.compile_env!(:antikythera_aws, :log_storage_bucket)
     @presigned_url_lifetime 600
 
     @behaviour AntikytheraEal.LogStorage.Behaviour
@@ -106,7 +106,7 @@ defmodule AntikytheraAws.S3 do
   end
 
   defmodule AssetStorage do
-    @bucket_name Application.fetch_env!(:antikythera_aws, :asset_storage_bucket)
+    @bucket_name Application.compile_env!(:antikythera_aws, :asset_storage_bucket)
     @cache_control "public, max-age=31536000"
 
     @behaviour AntikytheraEal.AssetStorage.Behaviour

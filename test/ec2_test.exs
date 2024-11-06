@@ -2,8 +2,8 @@ defmodule AntikytheraAws.Ec2.ClusterConfigurationTest do
   use Croma.TestCase
   alias Antikythera.Httpc
 
-  @region_args ["--region", Application.fetch_env!(:antikythera_aws, :region)]
-  @auto_scaling_group_name Application.fetch_env!(:antikythera_aws, :auto_scaling_group_name)
+  @region_args ["--region", Application.compile_env!(:antikythera_aws, :region)]
+  @auto_scaling_group_name Application.compile_env!(:antikythera_aws, :auto_scaling_group_name)
   @availability_zone_metadata_path "/latest/meta-data/placement/availability-zone"
   @node_a_instance_id "i-0d87927817101e3d1"
   @node_b_instance_id "i-0d87927817101e3d2"
