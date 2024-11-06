@@ -39,10 +39,10 @@ defmodule AntikytheraAws.MixProject do
   defp deps() do
     [
       {:antikythera, "~> 0.5"},
-      {:ex_doc, "~> 0.18", [only: :dev, runtime: false]},
-      {:dialyxir, "~> 0.5", [only: :dev, runtime: false]},
-      {:credo, "~> 1.4.0", [only: :dev, runtime: false]},
-      {:meck, "~> 0.8", [only: :test]}
+      {:ex_doc, "~> 0.33.0", [only: :dev, runtime: false]},
+      {:dialyxir, "~> 1.4.4", [only: :dev, runtime: false]},
+      {:credo, "~> 1.7.8", [only: :dev, runtime: false]},
+      {:meck, "~> 0.9.2", [only: :test]}
     ]
   end
 
