@@ -6,7 +6,7 @@ defmodule AntikytheraAws.MixProject do
   @github_url "https://github.com/access-company/antikythera_aws"
 
   @version "0.4.0"
-  @release true
+  @release false
 
   if @release do
     @source_ref @version
