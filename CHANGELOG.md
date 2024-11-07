@@ -1,6 +1,6 @@
 # Changelog of Interfaces Provided by AntikytheraAws
 
-- Next:
+- 0.4.0:
     - Upgrade Erlang/OTP to v24 series.
     - Upgrade Elixir to v1.13 series.
 - 0.3.0:
