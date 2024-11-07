@@ -10,8 +10,8 @@ defmodule AntikytheraAws.Ec2.ClusterConfiguration do
   alias AntikytheraAws.Imds
   require AntikytheraCore.Logger, as: L
 
-  @region Application.fetch_env!(:antikythera_aws, :region)
-  @auto_scaling_group_name Application.fetch_env!(:antikythera_aws, :auto_scaling_group_name)
+  @region Application.compile_env!(:antikythera_aws, :region)
+  @auto_scaling_group_name Application.compile_env!(:antikythera_aws, :auto_scaling_group_name)
   @availability_zone_metadata_path "/latest/meta-data/placement/availability-zone"
 
   @impl true
