@@ -38,7 +38,11 @@ defmodule AntikytheraAws.MixProject do
 
   defp deps() do
     [
-      {:antikythera, "~> 0.5"},
+      {:antikythera,
+       [
+         git: "git@github.com:access-company/antikythera.git",
+         ref: "972a7ebabb702dce556caf439d80cf2f7449b655"
+       ]},
       {:ex_doc, "~> 0.33.0", [only: :dev, runtime: false]},
       {:dialyxir, "~> 1.4.4", [only: :dev, runtime: false]},
       {:credo, "~> 1.7.8", [only: :dev, runtime: false]},
