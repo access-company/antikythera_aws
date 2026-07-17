@@ -29,13 +29,14 @@ See [`README.md`](./README.md) for details.
 
 ## Commands
 
-| Purpose               | Command                  |
-| --------------------- | ------------------------ |
-| Setup                 | `mix deps.get`           |
-| Format                | `mix format`             |
-| Test                  | `mix test`               |
-| Typecheck             | `mix dialyzer`           |
-| Static code analysis  | `mix credo -a --strict`  |
+| Purpose               | Command                             |
+| --------------------- | ----------------------------------- |
+| Setup                 | `mix deps.get`                      |
+| Format                | `mix format`                        |
+| Test                  | `mix test`                          |
+| Typecheck             | `mix dialyzer`                      |
+| Static code analysis  | `mix credo -a --strict`             |
+| Lint markdown         | `markdownlint-cli2 --fix "**/*.md"` |
 
 ## Development Rules
 
