@@ -19,6 +19,9 @@ defmodule AntikytheraAws.MixProject do
       app: :antikythera_aws,
       version: @version,
       elixir: "~> 1.13",
+      # Put `:croma` after `:elixir` so that `Croma.New1Existence.has_new1?/1` doesn't raise
+      # for type modules generated concurrently by multiple files (e.g. test files compiled in parallel).
+      compilers: Mix.compilers() ++ [:croma],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       source_url: @github_url,
