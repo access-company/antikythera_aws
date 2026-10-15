@@ -1,5 +1,8 @@
 # Changelog of Interfaces Provided by AntikytheraAws
 
+- 0.5.0 (unreleased):
+    - Upgrade Erlang/OTP to v26 series.
+    - Upgrade Elixir to v1.19 series.
 - 0.4.0:
     - Upgrade Erlang/OTP to v24 series.
     - Upgrade Elixir to v1.13 series.
