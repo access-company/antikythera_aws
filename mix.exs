@@ -41,11 +41,11 @@ defmodule AntikytheraAws.MixProject do
       {:antikythera,
        [
          git: "git@github.com:access-company/antikythera.git",
-         ref: "972a7ebabb702dce556caf439d80cf2f7449b655"
+         ref: "1d56aaaeced13f38ae6db916f56cd9a2299c2292"
        ]},
-      {:ex_doc, "~> 0.33.0", [only: :dev, runtime: false]},
-      {:dialyxir, "~> 1.4.4", [only: :dev, runtime: false]},
-      {:credo, "~> 1.7.8", [only: :dev, runtime: false]},
+      {:ex_doc, "~> 0.40.1", [only: :dev, runtime: false]},
+      {:dialyxir, "~> 1.4.7", [only: :dev, runtime: false]},
+      {:credo, "~> 1.7.17", [only: :dev, runtime: false]},
       {:meck, "~> 0.9.2", [only: :test]}
     ]
   end
